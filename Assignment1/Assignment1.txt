@@ -1,0 +1,12 @@
+Process Programming. Due Feb 10 (Wed), 11:59pm.   In C language,  only the two pieces of source code  are to be submitted via BBL.
+
+(a) Chapter3 Exercises:3.21.
+
+(b) Chapter3 Programming Project 1, Unix Shell and History Feature
+Requirements:  All the coding must be done in C language executable in linux machine. People using MAC should take extra care to create an executable C code in Linux. Grading will use a Linux environment.
+Additional requirements for (a) Exercise 3.21:
+1. Child Process will generate the expected sequence
+2. Input will be provided from the command line
+3. Child Process will output the generated sequence
+4. Input must be a positive number, So, necessary checking is required
+5. Parent must wait for the child process to complete
