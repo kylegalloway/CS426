@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
         /* child process */
         else if (pid == 0)
         {
-            execlp("/home/kyle/School/CS 426/Assignments/Collatz.exe", "Collatz.exe", argv[1], (char *)NULL);
+            execlp("/home/kyle/School/CS 426/Assignments/Collatz.exe", "Collatz.exe", argv[1], (char *) NULL);
         }
         /* parent process*/
         else

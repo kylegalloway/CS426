@@ -72,7 +72,7 @@ main()
         /* child process */
         else if (pid == 0)
         {
-            execvp(args);
+            execvp(args[0], args[1-...]);
         }
         /* parent process*/
         else
@@ -87,7 +87,7 @@ main()
         // int i = 0;
         // while(i < argc)
         // {
-        //     args[i] == '\0'; /* reset args array */
+        //     args[i] = '\0'; /* reset args array */
         //     ++i;
         // }
 
