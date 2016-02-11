@@ -69,25 +69,11 @@ main(void)
 
         if (strcmp(args[0], "history") != 0)
         {
-            if (command_count < 10)
-            {
-                history[command_count].id = command_count;
-                memcpy(history[command_count].tokens, args, sizeof(args));
-                history[command_count].background = background;
-                command_count++;
-            }
-            else
-            {
-                int i;
-                for (i = 0; i < 10; ++i)
-                {
-                    history[i] = history[i + 1];
-                }
-                history[9].id = command_count;
-                memcpy(history[9].tokens, args, sizeof(args));
-                history[9].background = background;
-                command_count++;
-            }
+            int spot = command_count % 10;
+            history[spot].id = command_count;
+            memcpy(history[spot].tokens, args, sizeof(args));
+            history[spot].background = background;
+            command_count++;
 
             /* fork a child process */
             pid_t pid = fork();
@@ -114,11 +100,11 @@ main(void)
         }
         else
         {
-            int i;
-            int c = MIN(command_count, 10);
-            for (i = 0; i < c; ++i)
+            int i = 0;
+            while (i < 10 && command_count - i > 0)
             {
                 printf("%d\t%s\t%d\n", history[i].id, history[i].tokens[0], history[i].background);
+                ++i;
             }
         }
 
