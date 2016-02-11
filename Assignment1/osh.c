@@ -61,14 +61,11 @@ main(void)
 
         while (token != NULL)
         {
-            memcpy(args[argc], token, sizeof(args[argc]));
-            argc++;
-            // args[argc++] = token; /* Adds the string to args */
+            args[argc++] = token; /* Adds the string to args */
             token = strtok(NULL," ");
         }
 
-        memcpy(args[argc], token, sizeof(args[argc]));
-        // args[argc] = token; /* Adds the string to args */
+        args[argc] = token; /* Adds the string to args */
 
         // if(args[0][0] == '!')
         // {
