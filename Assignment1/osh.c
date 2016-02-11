@@ -67,7 +67,73 @@ main(void)
 
         args[argc] = token; /* Adds the string to args */
 
-        if (strcmp(args[0], "history") != 0)
+        // if(args[0][0] == '!')
+        // {
+        //     char second = args[0][1];
+        //     if (second == '!')
+        //     {
+        //         background = history[0].background;
+        //         /* fork a child process */
+        //         pid_t pid = fork();
+
+        //         /* error occurred */
+        //         if (pid < 0) {
+        //             fprintf(stderr, "Fork Failed");
+        //             return 1;
+        //         }
+        //         /* if child process */
+        //         else if (pid == 0)
+        //         {
+        //             execvp(history[0].tokens[0], history[0].tokens);
+        //         }
+        //         /* else parent process*/
+        //         else
+        //         {
+        //             if (background) /* If run in background */
+        //             {
+        //                 /* parent will wait for the child to complete */
+        //                 wait(NULL);
+        //             }
+        //         }
+        //     }
+        //     else if (atoi(second) > 0 && atoi(second) < 11)
+        //         {
+        //         background = history[atoi(second)].background;
+        //         /* fork a child process */
+        //         pid_t pid = fork();
+
+        //         /* error occurred */
+        //         if (pid < 0) {
+        //             fprintf(stderr, "Fork Failed");
+        //             return 1;
+        //         }
+        //         /* if child process */
+        //         else if (pid == 0)
+        //         {
+        //             execvp(history[atoi(second)].tokens[0], history[atoi(second)].tokens);
+        //         }
+        //         /* else parent process*/
+        //         else
+        //         {
+        //             if (background) /* If run in background */
+        //             {
+        //                 /* parent will wait for the child to complete */
+        //                 wait(NULL);
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         printf("That command does not exist.\n");
+        //         /* Resets args */
+        //         memset(args, '\0', sizeof(args));
+
+        //         /* Resets argc */
+        //         argc = 0;
+        //         continue;
+        //     }
+        // }
+        /*else*/ if (strcmp(args[0], "history") != 0)
         {
             int spot = command_count % 10;
             history[spot].id = command_count;
