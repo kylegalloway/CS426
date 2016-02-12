@@ -1,115 +1,4 @@
-#include <stdio.h> /* NULL, stdin, fflush, fgets, printf */
-#include <stdlib.h> /* malloc, realloc, calloc, free */
-#include <unistd.h> /* fork, exec* */
-#include <string.h> /* strtok, strlen, strcmp, strncpy */
-#include <sys/types.h> /* pid_t, wait */
-#include <sys/wait.h> /* wait */
-
-#define MAX_LINE 80 /* The maximum length command */
-#define MAX_HISTORY 10 /* The maximum number of commands stored in history */
-#define MIN(a,b)(a < b ? a : b) /* Finds the min of 2 inputs */
-
-/* Structure to hold each individual command */
-struct command
-{
-    int id;
-    char* tokens[MAX_LINE / 2 + 1];
-    int num_tokens;
-    int background;
-};
-
-/*
-    Trims the character from the string if it is the last character.
-    Returns a boolean based on whether the character was present.
- */
-int
-trim_trailing_match (char* s, char ch)
-{
-    int p = strlen(s) - 1;
-
-    if (p > 0)
-    {
-        if (s[p] == ch)
-        {
-            s[p] = '\0';
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-/*
-    Splits the input into an array of strings based on the delimiter.
-    Does not modify the input.
-    Sets argc to the count of separate strings.
-    Internal array is dynamic & null-terminated
- */
-char**
-tokenize(const char* input, const char* delim, int * argc)
-{
-    char* str = strdup(input);
-    int count = 0;
-    int capacity = 10;
-    char** result = malloc(capacity * sizeof(*result));
-    char* tok=strtok(str, delim);
-
-    while(1)
-    {
-        if (count >= capacity)
-        {
-            result = realloc(result, capacity * sizeof(*result));
-            capacity *= 2;
-        }
-
-        result[count++] = tok? strdup(tok) : tok;
-
-        if (!tok)
-        {
-            break;
-        }
-
-        tok=strtok(NULL, delim);
-    }
-
-    free(str);
-    * argc = count;
-    return result;
-}
-
-/*
-    Takes the command array args,
-    the specific index of the wanted command,
-    and the run-in-background boolean.
-    Runs the specified command in given foreground/background.
- */
-int
-run_command(struct command* args, int index, int background)
-{
-    /* fork a child process */
-    pid_t pid = fork();
-
-    /* error occurred */
-    if (pid < 0) {
-        fprintf(stderr, "Fork Failed");
-        return 1;
-    }
-    /* if child process */
-    else if (pid == 0)
-    {
-        execvp(args[index].tokens[0], args[index].tokens);
-    }
-    /* else parent process*/
-    else
-    {
-        if (background) /* If run in background */
-        {
-            wait(NULL); /* parent will wait for the child to complete */
-        }
-    }
-
-    return 0;
-}
+#include "osh.h"
 
 int
 main(void)
@@ -209,6 +98,96 @@ main(void)
         /* Resets argc */
         argc = 0;
 
+    }
+
+    return 0;
+}
+
+/*
+    Trims the character from the string if it is the last character.
+    Returns a boolean based on whether the character was present.
+ */
+int trim_trailing_match (char* s, char ch)
+{
+    int p = strlen(s) - 1;
+
+    if (p > 0)
+    {
+        if (s[p] == ch)
+        {
+            s[p] = '\0';
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/*
+    Splits the input into an array of strings based on the delimiter.
+    Does not modify the input.
+    Sets argc to the count of separate strings.
+    Internal array is dynamic & null-terminated
+ */
+char** tokenize(const char* input, const char* delim, int * argc)
+{
+    char* str = strdup(input);
+    int count = 0;
+    int capacity = 10;
+    char** result = malloc(capacity * sizeof(*result));
+    char* tok=strtok(str, delim);
+
+    while(1)
+    {
+        if (count >= capacity)
+        {
+            result = realloc(result, capacity * sizeof(*result));
+            capacity *= 2;
+        }
+
+        result[count++] = tok? strdup(tok) : tok;
+
+        if (!tok)
+        {
+            break;
+        }
+
+        tok=strtok(NULL, delim);
+    }
+
+    free(str);
+    * argc = count;
+    return result;
+}
+
+/*
+    Takes the command array args,
+    the specific index of the wanted command,
+    and the run-in-background boolean.
+    Runs the specified command in given foreground/background.
+ */
+int run_command(struct command* args, int index, int background)
+{
+    /* fork a child process */
+    pid_t pid = fork();
+
+    /* error occurred */
+    if (pid < 0) {
+        fprintf(stderr, "Fork Failed");
+        return 1;
+    }
+    /* if child process */
+    else if (pid == 0)
+    {
+        execvp(args[index].tokens[0], args[index].tokens);
+    }
+    /* else parent process*/
+    else
+    {
+        if (background) /* If run in background */
+        {
+            wait(NULL); /* parent will wait for the child to complete */
+        }
     }
 
     return 0;
