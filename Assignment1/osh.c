@@ -1,4 +1,5 @@
 #include <stdio.h> /* NULL, stdin, fflush, fgets, printf */
+#include <stdlib.h> /* malloc, realloc, calloc, free */
 #include <unistd.h> /* fork, exec* */
 #include <string.h> /* strtok, strlen, strcmp, strncpy */
 #include <sys/types.h> /* pid_t, wait */
@@ -29,6 +30,31 @@ trim_trailing_match (char* s, char ch)
     return 1;
 }
 
+char** tokenize(const char* input)
+{
+    char* str = strdup(input);
+    int count = 0;
+    int capacity = 10;
+    char** result = malloc(capacity*sizeof(*result));
+
+    char* tok=strtok(str," ");
+
+    while(1)
+    {
+        if (count >= capacity)
+            result = realloc(result, (capacity*=2)*sizeof(*result));
+
+        result[count++] = tok? strdup(tok) : tok;
+
+        if (!tok) break;
+
+        tok=strtok(NULL," ");
+    }
+
+    free(str);
+    return result;
+}
+
 struct command
 {
     int id;
@@ -57,15 +83,7 @@ main(void)
         trim_trailing_match(buffer, '\n');
         int background = trim_trailing_match(buffer, '&');
 
-        char* token = strtok(buffer," "); /* Token stores the output string */
-
-        while (token != NULL)
-        {
-            args[argc++] = token; /* Adds the string to args */
-            token = strtok(NULL," ");
-        }
-
-        args[argc] = token; /* Adds the string to args */
+        memcpy(args, tokenize(buffer), sizeof(args));
 
         // if(args[0][0] == '!')
         // {
