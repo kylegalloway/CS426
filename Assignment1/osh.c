@@ -135,7 +135,7 @@ char** tokenize(const char* input, const char* delim, int * argc)
     int count = 0;
     int capacity = 10;
     char** result = malloc(capacity * sizeof(*result));
-    char* tok=strtok(str, delim);
+    char* tok = strtok(str, delim);
 
     while(1)
     {
@@ -152,7 +152,7 @@ char** tokenize(const char* input, const char* delim, int * argc)
             break;
         }
 
-        tok=strtok(NULL, delim);
+        tok = strtok(NULL, delim);
     }
 
     free(str);
