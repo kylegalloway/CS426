@@ -45,20 +45,30 @@ int main(int argc, char *argv[])
         fclose(myFile);
         printArray(count, 1);
 
+        /* Create parameter structs */
+        parameters *p1 = param_left_create(count);
+        parameters *p2 = param_right_create(count);
+        parameters *p3 = param_merge_create(count);
+
         /* Get the default attributes */
         pthread_attr_init(&attr_s1);
         pthread_attr_init(&attr_s2);
         pthread_attr_init(&attr_m);
         /* Create the thread */
-        pthread_create(&tid_s1, &attr_s1, sort, (void *) param_left_create(count));
-        pthread_create(&tid_s2, &attr_s2, sort,  (void *) param_right_create(count));
+        pthread_create(&tid_s1, &attr_s1, sort, (void *) p1);
+        pthread_create(&tid_s2, &attr_s2, sort,  (void *) p2);
         /* Wait for the thread to exit */
         pthread_join(tid_s1, NULL);
         pthread_join(tid_s2, NULL);
-        pthread_create(&tid_m, &attr_m, sort,  (void *) param_merge_create(count));
+        pthread_create(&tid_m, &attr_m, sort,  (void *) p3);
         pthread_join(tid_m, NULL);
 
         printArray(count, 0);
+
+        free(p1);
+        free(p2);
+        free(p3);
+        free(numberArray);
     }
     else
     {
