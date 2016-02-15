@@ -1,7 +1,7 @@
 #include <stdio.h> /* NULL, stdin, fflush, fgets, printf */
 #include <stdlib.h> /* malloc, realloc, calloc, free */
 #include <unistd.h> /* fork, exec* */
-#include <string.h> /* strtok, strlen, strcmp, strncpy */
+#include <string.h> /* strtok, strlen, strcmp, strncpy, memcpy */
 #include <sys/types.h> /* pid_t, wait */
 #include <sys/wait.h> /* wait */
 

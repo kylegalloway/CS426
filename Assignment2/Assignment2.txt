@@ -1,0 +1,12 @@
+Threads, using Pthreads API.  Due Feb 18 (Thu), 11:59pm.  In C language,  only the  source code to be submitted via BBL.
+
+Chapter4 Programming Project 2, Multithreaded Sorting Application
+
+Requirements:
+
+1. This Program will work by multiple thread generation
+2. Input is integer and should be kept in a file as one value per line. The file name will be read from command line
+3. The list must be divided into two smaller lists of equal size
+4. Two different sorting threads will be created to sort the two different lists using any sorting algorithm
+5. The two sublists shoud be merged into a single sorted list by a merging thread
+6. The parent thread will output the sorted array once all sorted threads have exited
