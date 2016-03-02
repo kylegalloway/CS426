@@ -111,7 +111,7 @@ void * teacher(void *param) {
 
 int main(int argc, char * argv[]) {
   if(argc != 2) {
-    printf("Usage: %s student_count\n", argv[0]);
+    printf("Usage: %s <number of students>\n", argv[0]);
     exit(1);
   }
   int student_count = atoi(argv[1]);

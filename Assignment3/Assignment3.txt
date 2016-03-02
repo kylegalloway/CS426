@@ -6,9 +6,8 @@ Synchronization. Use C and Pthreads API. POSIX Synchronization can be found in S
 Requirements:
 (1)  Requirements for 5.37:
     (a) Finite number of resources are managed
-    (b) Random number of  processes are generated to work with the resources
     (c) The number of processes should be a command line input
-    (d) Each process must request for random number of resources from resource pull, if there are resources available in the resource pull, it is assigned to the thread
+    (d) Each process must request for random number of resources from resource pool, if there are resources available in the resource pool, it is assigned to the thread
     (e) All process must return the resources to the resource pull so that other processes can get those resources
     (f) There must be a check for maximum and minimum number of resources
     (g) The output should be clear enough to identify the race condition among processes
