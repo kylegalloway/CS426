@@ -1,0 +1,22 @@
+Synchronization. Use C and Pthreads API. POSIX Synchronization can be found in Section 5.9.4. Due March 03 (Thu), 11:59pm. In C language, only the  source code to be submitted via BBL.
+
+(a) Chapter5 Programming Problem 5.37
+(b) Chapter5 Programming Project 1, Sleeping TA
+
+Requirements:
+(1)  Requirements for 5.37:
+    (a) Finite number of resources are managed
+    (b) Random number of  processes are generated to work with the resources
+    (c) The number of processes should be a command line input
+    (d) Each process must request for random number of resources from resource pull, if there are resources available in the resource pull, it is assigned to the thread
+    (e) All process must return the resources to the resource pull so that other processes can get those resources
+    (f) There must be a check for maximum and minimum number of resources
+    (g) The output should be clear enough to identify the race condition among processes
+    (h) A semaphore or mutex lock should be used to fix the race condition in a separate code segment
+(2)  Requirements for Project 1, Sleeping TA:
+    (a) use a command line input for number of students;
+    (b) use "printf" to output necessary info on the activities of the code execution; such as:
+        (i) All the states a TA can have. For example, TA is helping student 1, TA is sleeping or TA has been awakened by student 1;
+        (ii) The chairs in the waiting room should be maintained as a FIFO and all the different states of the chairs should be printed out. As for example, how many chairs are available, which student is sitting on which chair etc;
+        (iii) The states of students should also be printed out: waiting/ taking help/ Programming.
+    (c) use "sleep" and "abort" at the main thread to control the termination of  your code.
