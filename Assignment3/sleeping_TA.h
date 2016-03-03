@@ -6,8 +6,7 @@
 
 #define CHAIRS 3
 #define SCALE 2000000 /* To scale up usleep */
-#define TRUE 1
-#define FALSE 0
 
 void *student(void *num);
 void *TA(void *);
+int chairsAvailable();
