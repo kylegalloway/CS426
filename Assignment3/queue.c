@@ -48,12 +48,12 @@ int front(Queue *Q)
         return Q->elements[Q->front];
 }
 
-void Enqueue(Queue *Q,int element)
+int Enqueue(Queue *Q,int element)
 {
         /* If the Queue is full, we cannot push an element into it as there is no space for it.*/
         if(Q->size == Q->capacity)
         {
-                printf("Queue is Full\n");
+                return -1
         }
         else
         {
@@ -67,5 +67,5 @@ void Enqueue(Queue *Q,int element)
                 /* Insert the element in its rear side */
                 Q->elements[Q->rear] = element;
         }
-        return;
+        return 0;
 }

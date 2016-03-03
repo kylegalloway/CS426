@@ -4,6 +4,8 @@
 #include <stdlib.h> /* srand, rand, time */
 #include <time.h>   /* time */
 
+#include "queue.h"
+
 #define CHAIRS 3
 #define SCALE 2000000 /* To scale up usleep */
 

@@ -7,6 +7,7 @@
 sem_t wait_in_chair, TA_helping, TA_sleeping, student_being_helped;
 
 /* Keeps track of how many students are waiting in chairs */
+// Queue *waiting_chairs = createQueue(CHAIRS);
 int chairsTaken = 0;
 
 int main(int argc, char *argv[])
