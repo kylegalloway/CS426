@@ -11,3 +11,4 @@ int increase_count(int count);
 int fixed_decrease_count(int count, pthread_t id);
 int createProcesses(int count);
 void *process(void *param);
+void *fixed_process(void *param);

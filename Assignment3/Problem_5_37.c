@@ -15,8 +15,13 @@ int main(int argc, char const *argv[])
     scanf("%d", &prompt);
     if (prompt == 0)
         printf("You selected Broken\n");
-    else
+    else if (prompt == 1)
         printf("You selected Unbroken\n");
+    else
+    {
+        printf("Please use correct input!\n", argv[0]);
+        exit(1);
+    }
 
     sem_init(&sem, 0, 1);
     srand(time(NULL));
@@ -57,25 +62,29 @@ int increase_count(int count)
 /* otherwise return -1 */
 int fixed_decrease_count(int count, pthread_t id)
 {
-    /* acquire the semaphore */
-    sem_wait(&sem);
+    int run = 1;
+    while(run)
+    {
+        /* acquire the semaphore */
+        sem_wait(&sem);
 
-    printf("%ld Needs %d resources.\n", id, count);
-    /* critical section */
-    if (available_resources < count)
-    {
-        printf("%ld Did not succeed.\n", id);
-        sem_post(&sem);
-        return -1;
+        printf("%ld Needs %d resources.\n", id, count);
+        /* critical section */
+        if (available_resources < count)
+        {
+            printf("%ld Did not succeed.\n", id);
+            sem_post(&sem);
+        }
+        else
+        {
+            available_resources -= count;
+            printf("%ld Succeeded in getting %d resources.\n", id, count);
+            /* release the semaphore */
+            sem_post(&sem);
+            run = 0;
+        }
     }
-    else
-    {
-        available_resources -= count;
-        printf("%ld Succeeded in getting %d resources.\n", id, count);
-        /* release the semaphore */
-        sem_post(&sem);
-        return 0;
-    }
+    return 0;
 }
 
 int createProcesses(int count)
@@ -85,7 +94,16 @@ int createProcesses(int count)
     printf("%d processes created\n", count);
     printf("%d Available Resources\n", available_resources);
     for (i = 0; i < count; i++) {
-        pthread_create(&tid[i], NULL, process, NULL);
+        if (prompt == 0)
+        {
+            printf("Broken\n");
+            pthread_create(&tid[i], NULL, process, NULL);
+        }
+        else
+        {
+            printf("Unbroken\n");
+            pthread_create(&tid[i], NULL, fixed_process, NULL);
+        }
     }
     for (i = 0; i < count; i++) {
         pthread_join(tid[i], NULL);
@@ -99,28 +117,22 @@ void *process(void *param)
     pthread_t id = pthread_self();
     int resources_needed = (rand() % MAX_RESOURCES) + 1;
 
-    if (prompt == 0)
-    {
-        printf("Broken\n");
-        int success = -1;
-        while(success == -1)
-        {
-            success = decrease_count(resources_needed, id);
-            usleep(rand() % 10);
-        }
-    }
-    else
-    {
-        printf("Unbroken\n");
-        int success = -1;
-        while(success == -1)
-        {
-            success = fixed_decrease_count(resources_needed, id);
-            usleep(rand() % 10);
-        }
-    }
+    decrease_count(resources_needed, id);
+    usleep(rand() % 10);
 
-    sleep(rand() % 10);
+    printf("%ld Finished processing.\n", id);
+    printf("%ld Returns %d resources.\n", id, resources_needed);
+    increase_count(resources_needed);
+}
+
+void *fixed_process(void *param)
+{
+    pthread_t id = pthread_self();
+    int resources_needed = (rand() % MAX_RESOURCES) + 1;
+
+    fixed_decrease_count(resources_needed, id);
+    usleep(rand() % 10);
+
     printf("%ld Finished processing.\n", id);
     printf("%ld Returns %d resources.\n", id, resources_needed);
     increase_count(resources_needed);
