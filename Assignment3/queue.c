@@ -4,9 +4,9 @@ Queue * createQueue(int maxElements)
 {
         /* Create a Queue */
         Queue *Q;
-        Q = (Queue *)malloc(sizeof(Queue));
+        Q = (Queue *) malloc(sizeof(Queue));
         /* Initialise its properties */
-        Q->elements = (int *)malloc(sizeof(int)*maxElements);
+        Q->elements = (int *) malloc(sizeof(int) * maxElements);
         Q->size = 0;
         Q->capacity = maxElements;
         Q->front = 0;
@@ -15,26 +15,25 @@ Queue * createQueue(int maxElements)
         return Q;
 }
 
-void Dequeue(Queue *Q)
+int Dequeue(Queue *Q)
 {
         /* If Queue size is zero then it is empty. So we cannot pop */
-        if(Q->size==0)
+        if(Q->size == 0)
         {
                 printf("Queue is Empty\n");
-                return;
+                return -1;
         }
         /* Removing an element is equivalent to incrementing index of front by one */
         else
         {
                 Q->size--;
                 Q->front++;
+
                 /* As we fill elements in circular fashion */
-                if(Q->front==Q->capacity)
-                {
+                if(Q->front == Q->capacity)
                         Q->front=0;
-                }
         }
-        return;
+        return 0;
 }
 
 int front(Queue *Q)
