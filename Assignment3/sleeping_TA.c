@@ -62,6 +62,7 @@ void *student(void *param) {
     while(1)
     {
         /* Program for a random amount of time */
+        printf("Student %d is programming.\n", num);
         usleep((rand() % 10) * SCALE);
 
         /* Need help so try to grab a chair */
@@ -70,6 +71,7 @@ void *student(void *param) {
             sem_wait(&wait_in_chair);
             Enqueue(waiting_chairs, num);
             printf("Student %d is outside waiting.\n", num);
+            printf("%d of %d chairs are taken.\n", waiting_chairs->size, CHAIRS);
 
             /* Wait for the TA to be free */
             sem_wait(&TA_helping);
@@ -109,6 +111,7 @@ void *TA(void *param) {
         {
             /* Grab student from queue */
             Dequeue(waiting_chairs);
+            printf("%d of %d chairs are taken.\n", waiting_chairs->size, CHAIRS);
             /* Take a random amount of time to help student */
             printf("The TA is helping a student.\n");
             usleep((rand() % 10) * SCALE / 10);
