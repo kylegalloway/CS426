@@ -52,7 +52,7 @@ int Enqueue(Queue *Q,int element)
         /* If the Queue is full, we cannot push an element into it as there is no space for it.*/
         if(Q->size == Q->capacity)
         {
-                return -1
+                return -1;
         }
         else
         {
