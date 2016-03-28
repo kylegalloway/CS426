@@ -93,6 +93,7 @@ int createProcesses(int count)
     int i;
     printf("%d processes created\n", count);
     printf("%d Available Resources\n", available_resources);
+    int orig_available_resources = available_resources;
     for (i = 0; i < count; i++) {
         if (prompt == 0)
         {
@@ -109,6 +110,7 @@ int createProcesses(int count)
         pthread_join(tid[i], NULL);
     }
     printf("%d Available Resources\n", available_resources);
+    printf("Should be the same as before: %d\n", orig_available_resources);
 }
 
 
