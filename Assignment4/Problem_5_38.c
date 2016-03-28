@@ -2,7 +2,8 @@
 
 int available_resources = MAX_RESOURCES;
 int prompt;
-sem_t sem;
+
+Monitor monitor;
 
 int main(int argc, char const *argv[])
 {
@@ -10,30 +11,61 @@ int main(int argc, char const *argv[])
         printf("Usage: %s <number of processes>\n", argv[0]);
         exit(1);
     }
+    srand(time(NULL));
 
     printf("Broken(0) or Unbroken(1)?\n");
     scanf("%d", &prompt);
     if (prompt == 0)
+    {
         printf("You selected Broken\n");
+        createProcesses(atoi(argv[1]));
+    }
     else if (prompt == 1)
+    {
         printf("You selected Unbroken\n");
+        fixedCreateProcesses(atoi(argv[1]));
+    }
     else
     {
         printf("Please use correct input!\n");
         exit(1);
     }
 
-    sem_init(&sem, 0, 1);
-    srand(time(NULL));
-    createProcesses(atoi(argv[1]));
-
     return 0;
 }
 
+int createProcesses(int count)
+{
+    pthread_t tid[count];
+    int i;
+    printf("%d processes created\n", count);
+    printf("%d Available Resources\n", available_resources);
+    int orig_available_resources = available_resources;
+    for (i = 0; i < count; i++) {
+        printf("Create Broken Process %d\n", i);
+        pthread_create(&tid[i], NULL, process, NULL);
+    }
+    for (i = 0; i < count; i++) {
+        pthread_join(tid[i], NULL);
+    }
+    printf("%d Available Resources\n", available_resources);
+    printf("Should be the same as before: %d\n", orig_available_resources);
+}
+
+void *process(void *param)
+{
+    pthread_t id = pthread_self();
+    int resources_needed = (rand() % MAX_RESOURCES) + 1;
+
+    decrease_count(resources_needed, id);
+    usleep(rand() % 10);
+
+    printf("%ld Finished processing.\n", id);
+    printf("%ld Returns %d resources.\n", id, resources_needed);
+    increase_count(resources_needed);
+}
 
 /* decrease available_resources by count resources */
-/* return 0 if sufficient resources available */
-/* otherwise return -1 */
 int decrease_count(int count, pthread_t id)
 {
     printf("%ld Needs %d resources.\n", id, count);
@@ -54,88 +86,59 @@ int decrease_count(int count, pthread_t id)
 int increase_count(int count)
 {
     available_resources += count;
+    pthread_cond_signal(&monitor.cond);
     return 0;
 }
 
-/* decrease available_resources by count resources */
-/* return 0 if sufficient resources available */
-/* otherwise return -1 */
-int fixed_decrease_count(int count, pthread_t id)
-{
-    int run = 1;
-    while(run)
-    {
-        /* acquire the semaphore */
-        sem_wait(&sem);
-
-        printf("%ld Needs %d resources.\n", id, count);
-        /* critical section */
-        if (available_resources < count)
-        {
-            printf("%ld Did not succeed.\n", id);
-            sem_post(&sem);
-        }
-        else
-        {
-            available_resources -= count;
-            printf("%ld Succeeded in getting %d resources.\n", id, count);
-            /* release the semaphore */
-            sem_post(&sem);
-            run = 0;
-        }
-    }
-    return 0;
-}
-
-int createProcesses(int count)
+int fixedCreateProcesses(int count)
 {
     pthread_t tid[count];
     int i;
+
+    monitor = mon_init();
+
     printf("%d processes created\n", count);
     printf("%d Available Resources\n", available_resources);
     int orig_available_resources = available_resources;
     for (i = 0; i < count; i++) {
-        if (prompt == 0)
-        {
-            printf("Create Broken Process %d\n", i);
-            pthread_create(&tid[i], NULL, process, NULL);
-        }
-        else
-        {
-            printf("Create Unbroken Process %d\n", i);
-            pthread_create(&tid[i], NULL, fixed_process, NULL);
-        }
+        printf("Create Unbroken Process %d\n", i);
+        pthread_create(&tid[i], NULL, fixed_process, NULL);
     }
     for (i = 0; i < count; i++) {
         pthread_join(tid[i], NULL);
     }
     printf("%d Available Resources\n", available_resources);
     printf("Should be the same as before: %d\n", orig_available_resources);
-}
 
-
-void *process(void *param)
-{
-    pthread_t id = pthread_self();
-    int resources_needed = (rand() % MAX_RESOURCES) + 1;
-
-    decrease_count(resources_needed, id);
-    usleep(rand() % 10);
-
-    printf("%ld Finished processing.\n", id);
-    printf("%ld Returns %d resources.\n", id, resources_needed);
-    increase_count(resources_needed);
+    return 0;
 }
 
 void *fixed_process(void *param)
 {
-    pthread_t id = pthread_self();
+    pthread_t id = pthread_self() % 10000;
     int resources_needed = (rand() % MAX_RESOURCES) + 1;
 
     fixed_decrease_count(resources_needed, id);
     usleep(rand() % 10);
 
     printf("%ld Finished processing.\n", id);
-    printf("%ld Returns %d resources.\n", id, resources_needed);
     increase_count(resources_needed);
+    printf("%ld Returns %d resources.\n", id, resources_needed);
+}
+
+/* decrease available_resources by count resources */
+int fixed_decrease_count(int count, pthread_t id)
+{
+    pthread_mutex_lock(&monitor.mutex);
+    printf("%ld Needs %d resources.\n", id, count);
+    while(available_resources < count)
+    {
+        printf("%ld Did not succeed. Count is: %d\n", id, count);
+        pthread_cond_wait(&monitor.cond, &monitor.mutex);
+    }
+    available_resources -= count;
+    printf("%ld Succeeded in getting %d resources.\n", id, count);
+    pthread_cond_signal(&monitor.cond);
+    pthread_mutex_unlock(&monitor.mutex);
+    return 0;
 }
