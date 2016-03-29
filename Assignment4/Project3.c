@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     }
 
     /* 5. Sleep */
-    usleep(sleep_time);
+    usleep(sleep_time * 1000);
 
     /* 6. Exit */
     exit(0);
