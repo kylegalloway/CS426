@@ -6,7 +6,7 @@
 #define PAGE_SIZE 256
 #define TLB_SIZE 16
 #define FRAME_SIZE 256
-#define FRAME_COUNT 256
+#define FRAME_COUNT (MEMORY_SIZE / PAGE_SIZE)
 #define PHYSICAL_MEMORY_SIZE 65536
 
 #define BACKING_STORE "BACKING_STORE.bin"
@@ -41,6 +41,19 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    // prompt the user for which physical memory size they want to simulate
+    char userInput[2] = {'0', '\0'};
+    while (userInput[0] != '1' && userInput[0] != '2')
+    {
+    printf("Please select your physical address space:\n'1' for 65536 bytes\n'2' for 32768 bytes:\n");
+    fflush(stdout);
+    fgets(userInput, 2, stdin);
+    }
+
+    unsigned int MEMORY_SIZE = 0;
+    if (userInput[0] == '1') { MEMORY_SIZE = 65536; }
+    if (userInput[0] == '2') { MEMORY_SIZE = 32768; }
+
     /* Keep track of memory accesses, page faults, and TLB hits. */
     int totalMemoryAccesses = 0;
     int totalPageFaults = 0;
@@ -74,7 +87,8 @@ int main(int argc, char const *argv[])
 
     /* Read the logical addresses and run the paging system. */
     char line[256]; /* Buffer for lines of address file. */
-    while (fgets(line, sizeof(line), addressesFile) != NULL) {
+    while (fgets(line, sizeof(line), addressesFile) != NULL)
+    {
         /* The logical address is 32 bits. */
         int logicalAddr = atoi(line);
         /* The page number is bits 15-8. */
@@ -84,7 +98,7 @@ int main(int argc, char const *argv[])
         /* Use 8-bit mask. */
         int pageOffset = logicalAddr & 0x000000FF;
         /* Checks the pageNumber & pageOffset. */
-        // printf("Virtual address: %d Page number: %d Page offset: %d\n", logicalAddr, pageNumber, pageOffset);
+        printf("Virtual address: %d Page number: %d Page offset: %d\n", logicalAddr, pageNumber, pageOffset);
 
         /* -1 indicates an unknown page number. */
         int frameNumber = -1;
@@ -98,7 +112,7 @@ int main(int argc, char const *argv[])
                 if (TLB[i].valid && TLB[i].pageNumber == pageNumber)
                 {
                     ++totalTLBHits;
-                    printf("%d\n", totalTLBHits);
+                    printf("Page: %d TLB Hit: %d\n", pageNumber, totalTLBHits);
                     frameNumber = TLB[i].frameNumber;
                 }
             }
@@ -175,12 +189,12 @@ int main(int argc, char const *argv[])
             }
 
         }
-            /* Read the value from memory and print the output. */
-            int physicalAddress = (frameNumber * PAGE_SIZE) + pageOffset;
-            /* TODO: Value doesn't work, need to format as signed byte */
-            char value = physicalMemory[physicalAddress];
-            printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
-            totalMemoryAccesses++;
+        /* Read the value from memory and print the output. */
+        int physicalAddress = (frameNumber * PAGE_SIZE) + pageOffset;
+        /* TODO: Value doesn't work, need to format as signed byte */
+        char value = physicalMemory[physicalAddress];
+        printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
+        totalMemoryAccesses++;
     }
 
     fclose(addressesFile);
