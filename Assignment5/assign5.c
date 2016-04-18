@@ -11,6 +11,11 @@
 
 #define BACKING_STORE "BACKING_STORE.bin"
 
+typedef struct {
+  int frameNumber;
+  int valid;
+} Page;
+
 int main(int argc, char const *argv[])
 {
     if (argc != 2) {
@@ -18,16 +23,126 @@ int main(int argc, char const *argv[])
         return 1;
     }
     /* Open the backing store. */
-    FILE* swapFile = fopen(BACKING_STORE, "r");
-    if (swapFile == NULL) {
+    FILE* backingFile = fopen(BACKING_STORE, "r");
+    if (backingFile == NULL) {
         fprintf(stderr, "Error: backing store is not accessible.\n");
-        return 2;
+        return 1;
     }
     /* Open the addresses to be translated. */
-    FILE* addressFile = fopen(argv[1], "r");
-    if (addressFile == NULL) {
+    FILE* addressesFile = fopen(argv[1], "r");
+    if (addressesFile == NULL) {
         fprintf(stderr, "Error: %s is not accessible.\n", argv[1]);
-        return 3;
+        return 1;
     }
+
+    /* Keep track of memory accesses, page faults, and TLB hits. */
+    int totalMemoryAccesses = 0;
+    int totalPageFaults = 0;
+    int totalTLBHits = 0;
+
+    /* Allocate the physical memory to be an array of PHYSICAL_MEMORY_SIZE. */
+    int physicalMemory[PHYSICAL_MEMORY_SIZE];
+    /* Setup a default, invalid Page to initialize the page table. */
+    const Page defaultPage = { .valid = 0 };
+    /* Initialize the page table using the defaultPage. */
+    Page pageTable[PAGE_TABLE_SIZE];
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++)
+    {
+        pageTable[i] = defaultPage;
+    }
+
+    /* Initialize an array to keep track of free frames. 0 = free. */
+    int freeFrames[FRAME_COUNT];
+    for (int i = 0; i < FRAME_COUNT; i++)
+    {
+        freeFrames[i] = 0;
+    }
+
+    /* Next frame to be used. (For FIFO). */
+    int nextFrame = 0;
+
+    /* Read the logical addresses and run the paging system. */
+    char line[256]; /* Buffer for lines of address file. */
+    while (fgets(line, sizeof(line), addressesFile) != NULL) {
+        /* The logical address is 32 bits. */
+        int logicalAddr = atoi(line);
+        /* The page number is bits 15-8. */
+        /* Use 16-bit mask and shift to get most significant 8 bits of that. */
+        int pageNumber = (logicalAddr & 0x0000FFFF) >> 8;
+        /* The page offset is bits 7-0. */
+        /* Use 8-bit mask. */
+        int pageOffset = logicalAddr & 0x000000FF;
+        /* Checks the pageNumber & pageOffset. */
+        // printf("Virtual address: %d Page number: %d Page offset: %d\n", logicalAddr, pageNumber, pageOffset);
+
+        /* -1 indicates an unknown page number. */
+        int frameNumber = -1;
+
+        /* Check if the page is in the pageTable. */
+        if (pageTable[pageNumber].valid)
+        {
+            frameNumber = pageTable[pageNumber].frameNumber;
+        }
+        /* If not, bring it into memory. */
+        else
+        {
+            /* Record the page fault. */
+            ++totalPageFaults;
+            /* Jump to the next frame to be used. */
+            frameNumber = nextFrame;
+            /* If that frame is free, */
+            if (freeFrames[frameNumber] != 0)
+            {
+                /* Make all references to that frameNumber invalid. */
+                for (int i = 0; i < PAGE_TABLE_SIZE; ++i)
+                {
+                    /* Find the valid reference to the frameNumber. */
+                    if (pageTable[i].valid && pageTable[i].frameNumber == frameNumber)
+                    {
+                        /* Then make it invalid and break out of the loop. */
+                        pageTable[i].valid = 0;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                freeFrames[frameNumber] = 1;
+            }
+
+            /* Copy the page from the backing store into physical memory. */
+            /* SEEK_SET makes fseek relative to the beginning of the file. */
+            fseek(backingFile, pageNumber * PAGE_SIZE, SEEK_SET);
+            fread(&physicalMemory[frameNumber * PAGE_SIZE], 1, PAGE_SIZE, backingFile);
+
+            /* Update the page table. */
+            pageTable[pageNumber].frameNumber = frameNumber;
+            pageTable[pageNumber].valid = 1;
+
+
+            /* Set the nextFrame to use FIFO replacement. */
+            nextFrame = ++nextFrame % FRAME_COUNT;
+        }
+
+        /* Read the value from memory and print the output. */
+        int physicalAddress = (frameNumber * PAGE_SIZE) + pageOffset;
+        /* TODO: Value doesn't work, need to format as signed byte */
+        char value = physicalMemory[physicalAddress];
+        printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
+        totalMemoryAccesses++;
+    }
+
+    fclose(addressesFile);
+    fclose(backingFile);
+
+    // print page fault rate and TLB hit rate statistics
+    printf("Number of Translated Addresses = %d\n", totalMemoryAccesses);
+    printf("Page Faults = %d\n", totalPageFaults);
+    double pageFaultRate = 1.0 * totalPageFaults / totalMemoryAccesses;
+    printf("Page Fault Rate: %.4f\n", pageFaultRate);
+    printf("TLB Hits = %d\n", totalTLBHits);
+    double TLBHitRate = 1.0 * totalTLBHits / totalMemoryAccesses;
+    printf("TLB Hit Rate: %.4f\n", TLBHitRate);
+
     return 0;
 }
