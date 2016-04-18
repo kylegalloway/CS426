@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h> /* NULL, printf */
 #include <stdlib.h> /* srand, rand, time */
 
@@ -47,7 +48,7 @@ int main(int argc, char const *argv[])
     int totalTLBHits = 0;
 
     /* Allocate the physical memory to be an array of PHYSICAL_MEMORY_SIZE. */
-    int physicalMemory[PHYSICAL_MEMORY_SIZE];
+    signed char physicalMemory[PHYSICAL_MEMORY_SIZE];
     /* Setup a default, invalid Page to initialize the page table. */
     const Page defaultPage = { .valid = 0 };
     /* Initialize the page table using the defaultPage. */
@@ -58,7 +59,7 @@ int main(int argc, char const *argv[])
     }
 
     /* Initialize an array to keep track of free frames. 0 = free. */
-    // int freeFrames[FRAME_COUNT];
+    int freeFrames[FRAME_COUNT];
     // for (int i = 0; i < FRAME_COUNT; ++i)
     // {
     //     freeFrames[i] = 0;
@@ -98,6 +99,7 @@ int main(int argc, char const *argv[])
                 if (TLB[i].valid && TLB[i].pageNumber == pageNumber)
                 {
                   ++totalTLBHits;
+                  printf("%d\n", totalTLBHits);;
                   frameNumber = TLB[i].frameNumber;
                 }
             }
@@ -173,13 +175,13 @@ int main(int argc, char const *argv[])
                 nextFrame = ++nextFrame % FRAME_COUNT;
             }
 
+        }
             /* Read the value from memory and print the output. */
             int physicalAddress = (frameNumber * PAGE_SIZE) + pageOffset;
             /* TODO: Value doesn't work, need to format as signed byte */
-            char value = physicalMemory[physicalAddress];
+            signed char value = physicalMemory[physicalAddress];
             printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
             totalMemoryAccesses++;
-        }
     }
 
     fclose(addressesFile);
