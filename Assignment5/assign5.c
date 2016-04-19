@@ -1,7 +1,6 @@
 #include <stdio.h> /* NULL, printf */
 #include <stdlib.h> /* srand, rand, time */
 
-// #define VIRTUAL_ADDRESS_SPACE 65536
 #define PAGE_TABLE_SIZE 256
 #define PAGE_SIZE 256
 #define TLB_SIZE 16
@@ -41,18 +40,19 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    // prompt the user for which physical memory size they want to simulate
+    /* Prompt for size of physical memory. */
     char userInput[2] = {'0', '\0'};
     while (userInput[0] != '1' && userInput[0] != '2')
     {
-    printf("Please select your physical address space:\n'1' for 65536 bytes\n'2' for 32768 bytes:\n");
-    fflush(stdout);
-    fgets(userInput, 2, stdin);
+        printf("Please select your physical address space:\n'1' for 32768 bytes\n'2' for 65536 bytes:\n");
+        fflush(stdout);
+        fgets(userInput, 2, stdin);
     }
 
+    /* Set memory size. */
     unsigned int MEMORY_SIZE = 0;
-    if (userInput[0] == '1') { MEMORY_SIZE = 65536; }
-    if (userInput[0] == '2') { MEMORY_SIZE = 32768; }
+    if (userInput[0] == '1') { MEMORY_SIZE = 32768; }
+    if (userInput[0] == '2') { MEMORY_SIZE = 65536; }
 
     /* Keep track of memory accesses, page faults, and TLB hits. */
     int totalMemoryAccesses = 0;
@@ -72,10 +72,6 @@ int main(int argc, char const *argv[])
 
     /* Initialize an array to keep track of free frames. 0 = free. */
     int freeFrames[FRAME_COUNT];
-    // for (int i = 0; i < FRAME_COUNT; ++i)
-    // {
-    //     freeFrames[i] = 0;
-    // }
 
     /* Next frame to be used. (For FIFO). */
     int nextFrame = 0;
@@ -112,7 +108,7 @@ int main(int argc, char const *argv[])
                 if (TLB[i].valid && TLB[i].pageNumber == pageNumber)
                 {
                     ++totalTLBHits;
-                    printf("Page: %d TLB Hit: %d\n", pageNumber, totalTLBHits);
+                    // printf("Page: %d TLB Hit: %d\n", pageNumber, totalTLBHits);
                     frameNumber = TLB[i].frameNumber;
                 }
             }
@@ -163,8 +159,8 @@ int main(int argc, char const *argv[])
                     freeFrames[frameNumber] = 1;
                 }
 
-                /* Copy the page from the backing store into physical memory. */
-                /* SEEK_SET makes fseek relative to the beginning of the file. */
+                /* Copy the page from backing store into physical memory. */
+                /* SEEK_SET makes fseek relative to beginning of the file. */
                 fseek(backingFile, pageNumber * PAGE_SIZE, SEEK_SET);
                 fread(&physicalMemory[frameNumber * PAGE_SIZE], 1, PAGE_SIZE, backingFile);
 
@@ -181,7 +177,8 @@ int main(int argc, char const *argv[])
                 TLB[TLBHead] = newTLBEntry;
 
                 /* Update CurrTLBSize, TLBHead, and nextFrame. */
-                TLBHead = ++TLBHead % TLB_SIZE; // FIFO TLB entry replacement
+                /* Set the TLBHead to use FIFO replacement. */
+                TLBHead = ++TLBHead % TLB_SIZE;
                 if (CurrTLBSize < TLB_SIZE) ++CurrTLBSize;
 
                 /* Set the nextFrame to use FIFO replacement. */
@@ -194,13 +191,13 @@ int main(int argc, char const *argv[])
         /* TODO: Value doesn't work, need to format as signed byte */
         char value = physicalMemory[physicalAddress];
         printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
-        totalMemoryAccesses++;
+        ++totalMemoryAccesses;
     }
 
     fclose(addressesFile);
     fclose(backingFile);
 
-    // print page fault rate and TLB hit rate statistics
+    /* Print statistics. */
     printf("Number of Translated Addresses = %d\n", totalMemoryAccesses);
     printf("Page Faults = %d\n", totalPageFaults);
     double pageFaultRate = 1.0 * totalPageFaults / totalMemoryAccesses;
