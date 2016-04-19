@@ -179,7 +179,7 @@ int main(int argc, char const *argv[])
                 /* Update CurrTLBSize, TLBHead, and nextFrame. */
                 /* Set the TLBHead to use FIFO replacement. */
                 TLBHead = ++TLBHead % TLB_SIZE;
-                if (CurrTLBSize < TLB_SIZE - 1) ++CurrTLBSize;
+                if (CurrTLBSize < TLB_SIZE) ++CurrTLBSize;
 
                 /* Set the nextFrame to use FIFO replacement. */
                 nextFrame = ++nextFrame % FRAME_COUNT;
