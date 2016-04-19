@@ -94,7 +94,7 @@ int main(int argc, char const *argv[])
         /* Use 8-bit mask. */
         int pageOffset = logicalAddr & 0x000000FF;
         /* Checks the pageNumber & pageOffset. */
-        printf("Virtual address: %d Page number: %d Page offset: %d\n", logicalAddr, pageNumber, pageOffset);
+        // printf("Virtual address: %d Page number: %d Page offset: %d\n", logicalAddr, pageNumber, pageOffset);
 
         /* -1 indicates an unknown page number. */
         int frameNumber = -1;
@@ -108,8 +108,8 @@ int main(int argc, char const *argv[])
                 if (TLB[i].valid && TLB[i].pageNumber == pageNumber)
                 {
                     ++totalTLBHits;
-                    // printf("Page: %d TLB Hit: %d\n", pageNumber, totalTLBHits);
                     frameNumber = TLB[i].frameNumber;
+                    printf("Page: %d Frame: %d TLB Hit: %d\n", pageNumber, frameNumber, totalTLBHits);
                 }
             }
         }
@@ -179,7 +179,7 @@ int main(int argc, char const *argv[])
                 /* Update CurrTLBSize, TLBHead, and nextFrame. */
                 /* Set the TLBHead to use FIFO replacement. */
                 TLBHead = ++TLBHead % TLB_SIZE;
-                if (CurrTLBSize < TLB_SIZE) ++CurrTLBSize;
+                if (CurrTLBSize < TLB_SIZE - 1) ++CurrTLBSize;
 
                 /* Set the nextFrame to use FIFO replacement. */
                 nextFrame = ++nextFrame % FRAME_COUNT;
