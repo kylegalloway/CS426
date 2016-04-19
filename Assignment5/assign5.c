@@ -109,7 +109,7 @@ int main(int argc, char const *argv[])
                 {
                     ++totalTLBHits;
                     frameNumber = TLB[i].frameNumber;
-                    printf("Page: %d Frame: %d TLB Hit: %d\n", pageNumber, frameNumber, totalTLBHits);
+                    // printf("Page: %d Frame: %d TLB Hit: %d\n", pageNumber, frameNumber, totalTLBHits);
                 }
             }
         }
@@ -168,22 +168,21 @@ int main(int argc, char const *argv[])
                 pageTable[pageNumber].frameNumber = frameNumber;
                 pageTable[pageNumber].valid = 1;
 
-                /* Update the TLB. */
-                TLBEntry newTLBEntry = {
-                                    .pageNumber = pageNumber,
-                                    .frameNumber = frameNumber,
-                                    .valid = 1
-                                };
-                TLB[TLBHead] = newTLBEntry;
-
-                /* Update CurrTLBSize, TLBHead, and nextFrame. */
-                /* Set the TLBHead to use FIFO replacement. */
-                TLBHead = ++TLBHead % TLB_SIZE;
-                if (CurrTLBSize < TLB_SIZE) ++CurrTLBSize;
-
                 /* Set the nextFrame to use FIFO replacement. */
                 nextFrame = ++nextFrame % FRAME_COUNT;
             }
+            /* Update the TLB. */
+            TLBEntry newTLBEntry = {
+                                .pageNumber = pageNumber,
+                                .frameNumber = frameNumber,
+                                .valid = 1
+                            };
+            TLB[TLBHead] = newTLBEntry;
+
+            /* Update CurrTLBSize, TLBHead, and nextFrame. */
+            /* Set the TLBHead to use FIFO replacement. */
+            TLBHead = ++TLBHead % TLB_SIZE;
+            if (CurrTLBSize < TLB_SIZE) ++CurrTLBSize;
 
         }
         /* Read the value from memory and print the output. */
