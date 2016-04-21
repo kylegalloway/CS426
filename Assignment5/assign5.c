@@ -29,9 +29,9 @@ int main(int argc, char const *argv[])
     }
 
     /* Set memory size. */
-    unsigned int MEMORY_SIZE = 0;
-    if (userInput[0] == '1') { MEMORY_SIZE = 32768; }
-    if (userInput[0] == '2') { MEMORY_SIZE = 65536; }
+    unsigned int PHYSICAL_MEMORY_SIZE = 0;
+    if (userInput[0] == '1') { PHYSICAL_MEMORY_SIZE = 32768; }
+    if (userInput[0] == '2') { PHYSICAL_MEMORY_SIZE = 65536; }
 
     /* Keep track of memory accesses, page faults, and TLB hits. */
     int totalMemoryAccesses = 0;
@@ -84,10 +84,11 @@ int main(int argc, char const *argv[])
             /* If not empty, walk through and see if the page is in it. */
             for (int i = 0; i < CurrTLBSize; ++i)
             {
-                if (TLB[i].valid && TLB[i].pageNumber == pageNumber)
+                int spot = (i + TLBHead) % TLB_SIZE;
+                if (TLB[spot].valid && TLB[spot].pageNumber == pageNumber)
                 {
                     ++totalTLBHits;
-                    frameNumber = TLB[i].frameNumber;
+                    frameNumber = TLB[spot].frameNumber;
                     // printf("Page: %d Frame: %d TLB Hit: %d\n", pageNumber, frameNumber, totalTLBHits);
                 }
             }
@@ -107,7 +108,9 @@ int main(int argc, char const *argv[])
                 ++totalPageFaults;
                 /* Jump to the next frame to be used. */
                 frameNumber = nextFrame;
-                /* If that frame is free, */
+                // printf("Page: %d Frame: %d PageFault: %d\n", pageNumber, frameNumber, totalPageFaults);
+
+                /* If that frame is not free, */
                 if (freeFrames[frameNumber] != 0)
                 {
                     /* Make all references to that frameNumber invalid. */
@@ -133,23 +136,23 @@ int main(int argc, char const *argv[])
                         }
                     }
                 }
-                else
-                {
-                    freeFrames[frameNumber] = 1;
-                }
 
                 /* Copy the page from backing store into physical memory. */
                 /* SEEK_SET makes fseek relative to beginning of the file. */
                 fseek(backingFile, pageNumber * PAGE_SIZE, SEEK_SET);
-                fread(&physicalMemory[frameNumber * PAGE_SIZE], 1, PAGE_SIZE, backingFile);
+                fread(&physicalMemory[frameNumber * FRAME_SIZE], 1, PAGE_SIZE, backingFile);
 
                 /* Update the page table. */
                 pageTable[pageNumber].frameNumber = frameNumber;
                 pageTable[pageNumber].valid = 1;
 
+                /* Mark that frame as taken. */
+                freeFrames[frameNumber] = 1;
+
                 /* Set the nextFrame to use FIFO replacement. */
                 nextFrame = ++nextFrame % FRAME_COUNT;
             }
+
             /* Update the TLB. */
             TLBEntry newTLBEntry = {
                                 .pageNumber = pageNumber,
@@ -165,7 +168,7 @@ int main(int argc, char const *argv[])
 
         }
         /* Read the value from memory and print the output. */
-        int physicalAddress = (frameNumber * PAGE_SIZE) + pageOffset;
+        int physicalAddress = (frameNumber * FRAME_SIZE) + pageOffset;
         /* TODO: Value doesn't work, need to format as signed byte */
         char value = physicalMemory[physicalAddress];
         printf("Virtual address: %d Physical address: %d Value: %d\n", logicalAddr, physicalAddress, value);
@@ -179,10 +182,10 @@ int main(int argc, char const *argv[])
     printf("Number of Translated Addresses = %d\n", totalMemoryAccesses);
     printf("Page Faults = %d\n", totalPageFaults);
     double pageFaultRate = 1.0 * totalPageFaults / totalMemoryAccesses;
-    printf("Page Fault Rate: %.4f\n", pageFaultRate);
+    printf("Page Fault Rate = %.3f\n", pageFaultRate);
     printf("TLB Hits = %d\n", totalTLBHits);
     double TLBHitRate = 1.0 * totalTLBHits / totalMemoryAccesses;
-    printf("TLB Hit Rate: %.4f\n", TLBHitRate);
+    printf("TLB Hit Rate = %.3f\n", TLBHitRate);
 
     return 0;
 }
